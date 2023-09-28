@@ -459,15 +459,6 @@ The algorithms or techniques used to allocate per-node quotas or priorities are 
       <name>References</name>
       <references>
         <name>Normative References</name>
-        <reference anchor="IANA-BP" target="https://www.iana.org/assignments/bundle/">
-          <front>
-            <title>Bundle Protocol</title>
-            <author>
-              <organization>IANA</organization>
-            </author>
-            <date/>
-          </front>
-        </reference>
         <reference anchor="IANA-SVC" target="https://www.iana.org/assignments/service-names-port-numbers/">
           <front>
             <title>Service Name and Transport Protocol Port Number Registry</title>
