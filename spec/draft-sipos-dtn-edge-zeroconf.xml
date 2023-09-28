@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?rfc toc="yes"?>
-<rfc xmlns:xi="http://www.w3.org/2001/XInclude" category="info" consensus="true" docName="draft-sipos-dtn-edge-zeroconf-00" ipr="trust200902" submissionType="IETF" tocInclude="true" updates="9171" version="3">
+<rfc xmlns:xi="http://www.w3.org/2001/XInclude" category="info" consensus="true" docName="draft-sipos-dtn-edge-zeroconf-00" ipr="trust200902" submissionType="IETF" tocInclude="true" version="3">
   <front>
     <title abbrev="BP Zero-Conf">
 Lightweight Bundle Protocol Edge Node with Zero-Configuration and Zero-State
