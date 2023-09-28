@@ -1,0 +1,512 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?rfc toc="yes"?>
+<rfc xmlns:xi="http://www.w3.org/2001/XInclude" category="info" consensus="true" docName="draft-sipos-dtn-edge-zeroconf-00" ipr="trust200902" submissionType="IETF" tocInclude="true" updates="9171" version="3">
+  <front>
+    <title abbrev="BP Zero-Conf">
+Lightweight Bundle Protocol Edge Node with Zero-Configuration and Zero-State
+    </title>
+    <seriesInfo name="Internet-Draft" value="draft-sipos-dtn-edge-zeroconf-00"/>
+    <author fullname="Brian Sipos" initials="B." surname="Sipos">
+      <organization abbrev="JHU/APL">The Johns Hopkins University Applied Physics Laboratory</organization>
+      <address>
+        <postal>
+          <street>11100 Johns Hopkins Rd.</street>
+          <city>Laurel</city>
+          <region>MD</region>
+          <code>20723</code>
+          <country>United States of America</country>
+        </postal>
+        <email>brian.sipos+ietf@gmail.com</email>
+      </address>
+    </author>
+    <date/>
+    <area>Transport</area>
+    <workgroup>Delay-Tolerant Networking</workgroup>
+    <keyword>DTN</keyword>
+    <abstract>
+      <t>
+This document explains how to use existing protocols, registries, code points, and algorithms to operate a Bundle Protocol (BP) edge node within a stable, non-challenged local underlayer IP network without the need for prior BP-layer configuration or long-term state.
+The purpose of this is to significantly lower the barrier to entry for lightweight BP edge nodes intended to act as endpoints for one (or only a few) BP applications.
+      </t>
+    </abstract>
+  </front>
+  <middle>
+    <section anchor="sec-intro">
+      <name>Introduction</name>
+      <t>
+The Delay-Tolerant Networking (DTN) architecture of <xref target="RFC4838"/> and its realization in the Bundle Protocol (BP) Version 7 of <xref target="RFC9171"/> do not directly address how an edge node can gain access to a BP network.
+Existing Bundle Protocol Agent (BPA) and Convergence Layer Adaptor (CLA) implementations treat BP-layer and network-layer configuration as externally supplied and managed data; this is the configuration burden to operate a BP node (including its BPA and variaous CLAs).
+      </t>
+      <t>
+A general-purpose BP node is designed to operate in environments with complex and diverse topologies, schedules, and underlayer networks.
+This provides an incredible power for a BP network to span large and complex physical and organizational domains, but this power comes at the cost of highly complex configuration on each node and a consistency of configurations between adjacent nodes.
+That necessary configuration represents a barrier to entry for deploying a simple edge node, <em>e.g.</em> one which is intended to mostly relay single-application data and rely on external BP routers to handle complexities associated with network topology and its time-variance.
+      </t>
+      <t>
+The situation which this document addresses is shown in <xref target="fig-context"/>, where one or more BP edge router acts as a gateway between an Internet Protocol (IP) local area network (LAN) and some larger BP core network.
+All edge nodes in the local network use the gateway router as a default bundle forwarding next-hop and a sole bundle previous-hop.
+The TCP Convergence Layer (TCPCL) is used on the IP LAN network due to it's favorable congestion control properties and it's ability to participate in DNS-based discovery without any new IANA allocations and without needing changes to BP or CLA behavior.
+      </t>
+      <figure anchor="fig-context">
+        <name>Network Edge Topology</name>
+        <artwork align="center" type="ascii-art">
+---- Core Network ----|------- IP LAN ----------
+   __   _
+ _(  )_( )_       +--------+   BP/  +--------+
+(          )  BP  |  Edge  |-+ TCP  |  Edge  |-+
+ )  nodes (&lt;=====&gt;| Router |&lt;------&gt;|  Node  | |
+(_   _    _)      +--------+ |      +--------+ |
+  (_) (__)         +-----^---+       +--^------+
+                         |              |
+                         +---- mDNS ----+
+                              or DNS
+        </artwork>
+      </figure>
+      <t>
+This type of situation is expected to be present within LANs on the edge of a mostly-non-terrestrial BP wide area network (WAN).
+Each of those LANs can have an isolated address space and potentially even use purely link-local addressing (which would create a situation similar to the Autonomic Control Plane (ACP) of <xref target="RFC8368"/>).
+      </t>
+      <t>
+While the methods of this document can provide an easy way for an edge node to access a BP network, there are many situations listed in <xref target="sec-scope"/> where these methods do not apply.
+These caveats to use do not diminish the utility in situations where the methods described here <em>do</em> apply.
+      </t>
+      <section anchor="sec-scope">
+        <name>Scope</name>
+        <t>
+This document applies to a common but somewhat overlooked situation where an edge node is well-connected, via a non-challenged IP LAN, to one or more edge router of a BP network.
+        </t>
+        <t>
+The zero-configuration CLA method defined in <xref target="sec-zeroconf"/> does not apply to the following situations:
+        </t>
+        <dl>
+          <dt>Non-IP Networks:</dt>
+          <dd>
+The mechanims in this document rely on functions specific to IP networks which are non-challenged and can operate protocols like mDNS <xref target="RFC6762"/> and TCP <xref target="RFC0793"/>.
+When needing to operate a node with a non-IP underlayer network, these protocols will not function out-of-the-box.
+          </dd>
+          <dt>Multiple Connectivity:</dt>
+          <dd>
+When a BP node is functioning as a router, it will necessarily need to configure multiple connectivity to peer nodes along with likely complex policy related to forwarding and storage between those peers.
+Even for an edge node there, are situations where multiple types or instances of connectivity exist into a single BP network.
+This document might apply in these situations, but might be an overly-simple method to handle them.
+          </dd>
+          <dt>Time-Variant Connectivity:</dt>
+          <dd>
+Even when an edge node has a single form of connectivity into a BP network, there may be time-variant aspect to that connectivity.
+This document does not directly address time-variance and relies on the application using the BP node to manage how wall-clock and scheduled time applies to the node's operations.
+See <xref target="sec-relax"/> for some alternatives when the edge router connectivity is not persistent.
+          </dd>
+          <dt>Peer Discovery:</dt>
+          <dd>
+In cases where a BP network already provides a neighbor or neighborhood discovery mechanism that is available to the edge nodes, that network-specific mechanism is likely to be more applicable and more efficient than the DNS-based method of <xref target="sec-zeroconf"/>.
+          </dd>
+        </dl>
+        <aside>
+          <t>
+There has not yet been investigation into whether or not the zero-configuraiton method defined in this document can apply to situations like low-power wide area network (LPWAN) as described in <xref target="RFC8376"/>.
+There is no technical reason why it should not work, but because it has a reliance on DNS it runs into the issues described in <xref section="4.9" target="RFC8376"/>.
+          </t>
+        </aside>
+        <t>
+The zero-state BPA method described in <xref target="sec-zerostate"/> does not apply to the following situations:
+        </t>
+        <dl>
+          <dt>Time-Variant Connectivity:</dt>
+          <dd>
+The stateless BPA is allowed to be stateless because it uses immediate pass-through of payload-to-bundle flow.
+In a situation where an application needs to transmit bundles but the CLA to the router is not available, this document does not define a "correct" behavior but relies on the application to manage scheduled activities.
+See <xref target="sec-relax"/> for some alternatives when the edge router connectivity is not persistent.
+          </dd>
+          <dt>Independent Applications:</dt>
+          <dd>
+The stateless mode of operating a BPA requires that the BPA itself does not need to retain received bundles.
+This is accomplished by operating the BPA only while the overlaying application itself is capable of having bundles delivered to it via all registered EIDs.
+If there are multiple independent applicaitons with time-varying registrations that do not coincide then this method will not apply.
+See <xref target="sec-relax"/> for some alternatives when multiple applications are needed.
+          </dd>
+        </dl>
+      </section>
+      <section anchor="sec-terminology">
+        <name>Terminology</name>
+        <t>
+The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in BCP 14 <xref target="RFC2119"/> <xref target="RFC8174"/> when, and only when, they appear in all capitals, as shown here.
+        </t>
+        <t>
+This document distinguishes between cases where a BP node is expected to function as an intermediate "router" (either on a network exterior or in its interior) versus an "edge node" with a more straightforward workload to source from and deliver to overlayer applications.
+        </t>
+        <t>
+This document also distinguishes between a "core network" which extends up to, but not beyond, its edge routers from the broadest sense of "network" that includes all nodes sending, delivering, or forwarding bundles.
+When discussing behaviors between the edge routers and edge nodes, this document uses the term "IP LAN" to distinguish that IP-based edge topology from whatever means other nodes in the core network have to exchange bundles.
+The IP LAN is assumed to have the expected properties of an IP network, and not behave as a "challenged network" as described in <xref target="RFC4838"/>.
+        </t>
+        <t>
+For the stateless agent of <xref target="sec-zerostate"/>, there is a separation between "TX session" used solely to transmit bundles and "RX session" used to receive bundles.
+        </t>
+      </section>
+    </section>
+    <section anchor="sec-prereq">
+      <name>Protocol Description</name>
+      <t>
+For a truly zero-configuration edge node, the network layer and below needs to be automatically configured.
+This is something which can already be achieved using methods such as the Dynamic Host Configuration Protocol (DHCP) of <xref target="RFC2131"/> and <xref target="RFC8415"/>, Stateless Address Autoconfiguration of <xref target="RFC2462"/>, or link-local addressing of <xref target="RFC3927"/> and <xref target="RFC4291"/>.
+There <bcp14>MAY</bcp14> be link- and network-level authentication and authorization applied to edge nodes.
+The form of these access control methods is a network policy matter.
+      </t>
+      <t>
+Once an edge node has an IP address and local network configuration, the method of <xref target="sec-zeroconf"/> is used to lookup TCPCL connection parameters from the edge router(s) in the LAN.
+Using those parameters, the methods of <xref target="sec-zerostate"/> can be used when an application wants to send or receive bundles via some edge router.
+      </t>
+      <section>
+        <name>Edge Router Requirements</name>
+        <t>
+The methods defined in this document rely on a local BPA willing to act as an edge router for associated BP edge nodes within the same IP LAN.
+The edge router <bcp14>SHALL</bcp14> act as a TCPCL passive listener in accordance with <xref section="4" target="RFC9174"/>.
+The edge router <bcp14>MAY</bcp14> act as the active or passvie roles of any number of other convergence layers, but those are immaterial to the functioning of these methods. 
+        </t>
+        <t>
+When a request to establish a TCPCL session is received, the edge router <bcp14>SHALL</bcp14> respond with the following initialization parameters:
+        </t>
+        <dl>
+          <dt>Transfer MRU:</dt>
+          <dd>Set to some non-zero limit to indicate that the router is willing to receive bundles within the session.</dd>
+          <dt>Node ID:</dt>
+          <dd>Set to the Node ID associated with the router.</dd>
+        </dl>
+        <t>
+All other session initialization parameters are left as an implementation matter.
+        </t>
+        <t>
+At the BPA level, the edge router <bcp14>SHALL</bcp14> be willing to forward and store bundles sourced by and destined for all of the edge nodes for which it establishes TCPCL sessions.
+The fact of being a "router" implies all of the activities required by <xref target="RFC9171"/> will be done for those edge-node-related bundles.
+It is an implementation matter for the router to decide if and when to limit new TCPCL sessions or transfers to conserve resources.
+        </t>
+        <t>
+After establishing a TCPCL session with an edge node, the edge router <bcp14>SHALL</bcp14> treat contact with the edge node as persistent for any interior routing or discovery protocols within the BP network.
+Even if contact with the edge node is not truly persistent, when it establishes TCPCL sessions with the edge node the edge router assumes responsibility for queueing bundles destined for that edge node.
+The assumption here is that the IP network between edge router and node is persistent enough to appear continuous over time to the core BP network.
+        </t>
+        <t>
+One side effect of these required behaviors is that edge nodes on the LAN can also send bundles between each other (via the edge router) without any prior configuration.
+The assumption of that behiavor is that the applications are aware of each other's EIDs from configuration outside of the BP or IP networks.
+Future work on BP node and service discovery could be used to avoid this assumption; once an edge node is able to communicate at the BP layer it could discover BP services via BP itself.
+        </t>
+      </section>
+      <section>
+        <name>High-Availability Configurations</name>
+        <t>
+The SRV fields for priority and weight defined in <xref target="RFC2782"/> allow for a large variety of possible network configurations with multiple edge routers providing access to a core network.
+Due to the need for edge routers to queue bundles destined for edge nodes and the possibility of an edge router serving an unbounded number of edge nodes, it is <bcp14>RECOMMENDED</bcp14> to provide high-availability of service within a single edge router rather than using mulitple separate routers.
+When multiple edge routers are used on an IP LAN it is <bcp14>RECOMMENDED</bcp14> to give them distinct SRV priority fields so that one router is the active provider and the other(s) act as warm standby providers.
+        </t>
+        <t>
+The risk when multiple routers are registered as TCPCL listeners with the same SRV priority is that a single edge node with limited connectivity (<em>e.g.</em>, for power saving purposes) would choose different router instances at different times and require that the edge routers themselves coordiante and forward queued bundles to the currently-connected router.
+Although this is an acceptable and allowed situation, it adds hops to a bundle's path, increases resource burdens on the edge routers, and complicates the ways that bundle forwarding could fail before delivery.
+        </t>
+      </section>
+    </section>
+    <section anchor="sec-zeroconf">
+      <name>Zero-Configuration CLA Discovery</name>
+      <t>
+This section defines a method to allow BP routers to advertise their presenece in an IP LAN and for edge nodes to discover those routers, both via DNS-based Service Discovery (DNS-SD) as defined in <xref target="RFC6763"/>.
+      </t>
+      <t>
+It is important to understand that the method defined in this section only applies to nodes willing to act as a gateway BP router for thir IP LAN.
+Any BP node which does not intend to forward bundles (both to and from) other nodes in a LAN <bcp14>SHALL NOT</bcp14> advertise their TCPCL listening state.
+      </t>
+      <aside>
+        <t>
+If a non-routing node were to advertise its TCPCL listening state the node can still refuse to receive any bundles within the TCPCL session.
+Even a routing node can refuse to receive individual bundles from any particular last-hop node or for any other reason.
+It is a performance optimization for non-routing nodes to not advertisze their TCPCL listening so that other nodes don't attempt to establish TCPCL sessions only to discover the node is not willing to accept bundles.
+        </t>
+      </aside>
+      <t>
+The DNS-SD naming convention of <xref target="RFC6763"/> combined with the service name registered in <xref target="IANA-SVC"/> for the TCPCL by <xref section="8.1" target="RFC9174"/> results in the following relative domain name (RDN):
+      </t>
+      <figure anchor="fig-rdn">
+        <name>DNS-SD Relative Domain Name</name>
+        <sourcecode>_dtn-bundle._tcp</sourcecode>
+      </figure>
+      <t>
+When used with the multicast DNS (mDNS) reserved local domain of <xref target="RFC6762"/> results in the following FQDN:
+      </t>
+      <figure anchor="fig-fqdn-local">
+        <name>Local Network FQDN</name>
+        <sourcecode>_dtn-bundle._tcp.local.</sourcecode>
+      </figure>
+      <t>
+The RDN can also be used with one or more search domain in accordance with <xref target="RFC1034"/>.
+For example, using a search domain of <tt>example.com</tt> results in the following FQDN:
+      </t>
+      <figure anchor="fig-fqdn-example">
+        <name>Example Domain FQDN</name>
+        <sourcecode>_dtn-bundle._tcp.example.com.</sourcecode>
+      </figure>
+      <t>
+In addition to the registered service name this document defines additional TXT RR parameters, as hints about the TCPCL listener, in accordance with <xref section="6" target="RFC6763"/> of:
+      </t>
+      <dl>
+        <dt><tt>txtvers</tt> (TXT RR Version):</dt>
+        <dd>This required key has a value indicating the current TXT RR version as an integer. This document defines version 1.</dd>
+        <dt><tt>protovers</tt> (Protocol Version):</dt>
+        <dd>This optional key has a value indicating the latest supported TCPCL version as an integer. When not present the default version is 4.</dd>
+      </dl>
+      <section>
+        <name>Service Registration</name>
+        <t>
+When an edge router desires to expose its willingness via mDNS, the FQDN of <xref target="fig-fqdn-local"/> <bcp14>SHALL</bcp14> be registered using DNS PTR and/or SRV resource records (RRs) with fields defined in <xref target="RFC6763"/> and <xref target="RFC2782"/> corresponding to its TCPCL listening configuration.
+        </t>
+        <t>
+An example of this for a router instance name <tt>rtr1</tt> operating with service priority 0, weight 0, DNS name <tt>host-name</tt>, and standard TCPCL port is below, with TTL and class fields elided.
+        </t>
+        <sourcecode>
+_dtn-bundle._tcp.local.       PTR  rtr1._dtn-bundle._tcp.local.
+rtr1._dtn-bundle._tcp.local.  SRV  0 0 4556 host-name.local.
+rtr1._dtn-bundle._tcp.local.  TXT  "txtvers=1" "protovers=4"
+        </sourcecode>
+        <t>
+When edge routers are managed via centralized DNS, the RDN of <xref target="fig-rdn"/> <bcp14>SHALL</bcp14> be registered in the local domain zone using a DNS <tt>SRV</tt> RR with fields defined in <xref target="RFC2782"/> corresponding to its TCPCL listening configuration.
+Routers <bcp14>MAY</bcp14> update DNS RRs via an in-band protocol such as DNS Update <xref target="RFC2136"/>.
+Multiple edge routers <bcp14>MAY</bcp14> be present in an IP LAN and identified with SRV RR containing different priority and/or weight fields.
+        </t>
+        <t>
+An example of multiple SRV RRs in the same domain with different priorities is below, with TTL and class fields elided.
+        </t>
+        <sourcecode>
+_dtn-bundle._tcp.example.com.       PTR  rtr1._dtn-bundle._tcp.example.com.
+_dtn-bundle._tcp.example.com.       PTR  rtr2._dtn-bundle._tcp.example.com.
+rtr1._dtn-bundle._tcp.example.com.  SRV  10  0 4556 primary.example.com.
+rtr1._dtn-bundle._tcp.example.com.  TXT  "txtvers=1" "protovers=4"
+rtr2._dtn-bundle._tcp.example.com.  SRV  20  0 4556 backup.example.com.
+rtr2._dtn-bundle._tcp.example.com.  TXT  ""
+        </sourcecode>
+      </section>
+      <section>
+        <name>Service Lookup</name>
+        <t>
+For the edge node wanting BP network access, the method is as simple as retrieving the SRV RR for the RDS of <xref target="fig-rdn"/>, either in the mDNS local domain or some other search domain, and using the SRV fields for a TCPCL session establishment.
+        </t>
+        <t>
+When an edge node desires to look up a local BP router it <bcp14>SHALL</bcp14> attempt to resolve the SRV and TXT RRs in accordance with <xref target="RFC6763"/> by one or both of the following:
+        </t>
+        <ol>
+          <li>
+Lookup the FQDN of <xref target="fig-fqdn-local"/> via mDNS in accordance with <xref target="RFC6762"/>.
+          </li>
+          <li>
+Lookup the RDN of <xref target="fig-rdn"/> within one or more search domains via DNS in accordance with <xref target="RFC1035"/> or equivalent protocol.
+          </li>
+        </ol>
+        <t>
+If the SRV or TXT lookup fails (which includes a lookup result with a target name of ".") the edge node <bcp14>SHALL</bcp14> treat edge routers as currently unavailable from the IP LAN.
+If SRV or TXT lookup fails, the edge node <bcp14>MAY</bcp14> attempt future lookups based on a schedule configured on the node.
+The specifics of reattempts at SRV or TXT record retrieval are an implementation matter (see <xref target="sec-relax"/> for possible alternatives).
+      </t>
+      <t>
+If the SRV lookup succeeds, the edge node <bcp14>SHALL</bcp14> use the priority and weight fields of each SRV record fields in accordance with <xref target="RFC2782"/> to choose a single instance.
+When a TCPCL session is needed for transfers (see <xref target="sec-zerostate"/>) and one or more service instances are available, the edge node <bcp14>SHALL</bcp14> use SRV record fields of a chosen instance in accordance with the active role of <xref target="RFC9174"/>.
+      </t>
+      <t>
+When needing to establish a TCPCL session, an edge node <bcp14>SHOULD</bcp14> use the same service instance for all TCPCL sessions until there is some failure to keep up an existing session or failure in establishing a new session.
+An edge node <bcp14>MAY</bcp14> use different servcie instnaces at the same time for different TCPCL sessions.
+It is an implementation matter to determine which service instance, or what combination of instances, to use for needed TCPCL sessions.
+        </t>
+      </section>
+    </section>
+    <section anchor="sec-zerostate">
+      <name>Zero-State BPA Operation</name>
+      <t>
+Beyond achieving CLA discovery for an edge router, an edge node can be operated in compliance with <xref target="RFC9171"/> without needing to use long-term BP-layer storage or state.
+The method defined in this section uses specifically parameterized TCPCL sessions to send bundles to and receive from an edge router discovered via the method of <xref target="sec-zeroconf"/>, but could use any other method to define how to connect to the edge router.
+      </t>
+      <t>
+Both the <xref format="title" target="sec-zerostate-tx"/> and <xref format="title" target="sec-zerostate-rx"/> procedures can be operated simultaneously or sequentially depending on how the overlaying application uses the BPA.
+It is an implementation matter for how the application indicates these policies to the BPA.
+      </t>
+      <t>
+Using this method, the BPA can be implemented as a pure software middleware under a BP-aware application.
+Either the application or BPA library could perform the procedures in a multi-threaded form, but neither BP, nor TCPCL, nor this document require that the various protocol processing be performed in parallel.
+      </t>
+      <t>
+The overall bundle flows are shown in <xref target="fig-bpa-flows"/>, which indicates how the transmission is handled fully independently from the reception, and how reception can cause status reports but these can be generated synchronously and handled separately from application-caused transmission.
+This diagram does not show possible security processing within the flows between sessions and the application or administrative element.
+      </t>
+      <figure anchor="fig-bpa-flows">
+        <name>Zero-State BPA Flows</name>
+        <artwork align="center" type="ascii-art">
+-- Network --|------- CLA ------|------- BPA ------|----- App ------
+
++---------+     +------------+       Bundle TX       +-------------+
+|         |&lt;----| TX session |&lt;----------------------|             |
+|         |     +------------+                       |    User     |
+|         |                                          | Application |
+|  Edge   |     +------------+       Bundle RX       |             |
+| Router  |----&gt;| RX session |------------+---------&gt;|             |
+|         |     +------------+            :          +-------------+
+|         |                               v
+|         |     +------------+   +----------------+
+|         |&lt;----| TX session |&lt;--| Administrative |
++---------+     +------------+   |    Element     |
+                                 +----------------+
+        </artwork>
+      </figure>
+      <section anchor="sec-zerostate-tx">
+        <name>Bundle Transmission</name>
+        <t>
+When the application indicates the need to send one or more bundles, a "TX" TCPCL session <bcp14>SHALL</bcp14> be established in accordance with <xref section="4" target="RFC9174"/> with the following initialization parameters:
+        </t>
+        <dl>
+          <dt>Keepalive Interval:</dt>
+          <dd>Set to zero to indicate no keepalive behavior is wanted.</dd>
+          <dt>Transfer MRU:</dt>
+          <dd>Set to zero to indicate that the edge node is not willing to receive bundles within the session.</dd>
+          <dt>Node ID:</dt>
+          <dd>Set to the Node ID associated with the edge node.</dd>
+        </dl>
+        <t>
+All other TX session initialization parameters are left as an implementation matter.
+        </t>
+        <t>
+After TX session establishment the bundle(s) requested by the application SHALL be transferred immediately.
+After all transfers are finished, the TX session <bcp14>SHALL</bcp14> be terminated with a Reason Code of Unknown (0x00).
+        </t>
+        <t>
+If TX session establishment fails, the application <bcp14>SHALL</bcp14> be informed that the associated bundles were not sent.
+It is an implementation matter for how to handle this kind of failure (<em>e.g.</em>, queueing within the BPA as in <xref target="sec-relax"/> or within the application).
+        </t>
+      </section>
+      <section anchor="sec-zerostate-rx">
+        <name>Bundle Reception</name>
+        <t>
+When the application indicates the desire to receive available bundles, an "RX" TCPCL session <bcp14>SHALL</bcp14> be established in accordance with <xref section="4" target="RFC9174"/> with the following initialization parameters:
+        </t>
+        <dl>
+          <dt>Keepalive Interval:</dt>
+          <dd>Set to some non-zero interval to indicate keepalive behavior is wanted.</dd>
+          <dt>Transfer MRU:</dt>
+          <dd>Set to some non-zero limit to indicate that the edge node is willing to receive bundles within the session.</dd>
+          <dt>Node ID:</dt>
+          <dd>Set to the Node ID associated with the edge node.</dd>
+        </dl>
+        <t>
+All other RX session initialization parameters are left as an implementation matter.
+        </t>
+        <t>
+After session establishment and until the application indicates otherwise, the RX session <bcp14>SHALL</bcp14> be kept up.
+When the application indicates that reception is to stop, the RX session <bcp14>SHALL</bcp14> be terminated with a Reason Code of Unknown (0x00).
+        </t>
+        <t>
+When a transfer is received in the RX session it <bcp14>SHALL</bcp14> be immediately processed in accordance with <xref target="RFC9171"/>.
+If the received bundle has a Destination to be delivered to the overlying application it <bcp14>SHALL</bcp14> be delivered immediately to the listening applicaiton.
+Otherwise, the bundle <bcp14>SHALL</bcp14> be deleted.
+In any case if during the processing of the received bundle it is necessary to send any administrative record (<em>e.g.</em>, bundle status report), the transmission procedure of <xref target="sec-zerostate-tx"/> <bcp14>SHALL</bcp14> be followed for those bundles.
+        </t>
+        <t>
+If RX session establishment fails, the application <bcp14>SHALL</bcp14> be informed that listening cannot be performed at the requested time.
+It is an implementation matter for how to handle this kind of failure (<em>e.g.</em>, waiting for service availability as in <xref target="sec-relax"/>).
+        </t>
+      </section>
+    </section>
+    <section anchor="sec-relax">
+      <name>Relaxed Limits for More Situations</name>
+      <t>
+Because mDNS and DNS both have dynamic state, a library-based BPA can keep an "egress" queue of bundles to be transmitted and wait for an indication of edge router availability.
+This is similar to how current stateful BPAs operate, where the bundle source processing is in a different thread of operation from the bundle forwarding processing.
+      </t>
+      <t>
+A library-based BPA can be used to host more than one independent application if there is an "delivery" queue of bundles destined for endpoints registered to known but non-listening applications.
+This is similar to how current stateful BPAs operate, where the bundle reception processing is in a different thread of operation from the bundle delivery processing.
+      </t>
+      <t>
+In environments where the LAN is not IP-based, it is still possible to use the zero-state BPA as defined in <xref target="sec-zerostate"/> with some alternative reliable and flow-controlled CL.
+The CL in this case need not be session-oriented but reliable sessions do make it easier to detect transmission failures and report them to the application.
+In this situation, the DNS-SD discovery method will not work (as there is no DNS) but there may be other, network-specific methods of discovery or out-of-band CLA configuration will be needed.
+      </t>
+    </section>
+    <section anchor="sec-iana">
+      <name>IANA Considerations</name>
+      <t>
+This specification uses many existing IANA registries, but does not make updates to any registries.
+      </t>
+    </section>
+    <section anchor="sec-security">
+      <name>Security Considerations</name>
+      <t>
+To establish a local network address and network parameters, the edge node might be required to supply link- or network-layer credentials.
+Even with existing protocols such as MACSec or IPSec, it is possible to use the Extensible Authentication Protocl (EAP) of <xref target="RFC3748"/> with the PKIX certificate profile of <xref section="4.4.2" target="RFC9174"/>.
+It is a network policy for how access is granted and network addresses are allocated or authorized.
+      </t>
+      <t>
+Within the zero-configuration specification of <xref target="sec-zeroconf"/> there is no prohibition on the use of network-layer, DNS, or TCPCL security.
+If required by network policy, an edge router will authenticate its peer node's Node ID using the TLS security and PKIX certificate profile of <xref section="4.4.2" target="RFC9174"/>.
+If required by network policy, an edge node will authenticate its peer router's Node ID using the TLS security and PKIX certificate profile of <xref section="4.4.2" target="RFC9174"/>.
+A <bcp14>RECOMMENDED</bcp14> policy is to use mutual authentication of TCPCL when not on an isolated network with its own link-layer or network-layer security.
+      </t>
+      <t>
+Within the zero-state specification of <xref target="sec-zerostate"/> there is no prohibition on the use of BP-layer security.
+If required by network policy, an edge node will provide BP integrity or confidentialy using the BPSec facilities of <xref target="RFC9172"/> either as a security source or a security acceptor.
+A <bcp14>RECOMMENDED</bcp14> policy is to have the edge node generate and process BPSec directly when possible, and to have the associated edge router act as BPSec gateway otherwise.
+      </t>
+      <t>
+This consideration is not specific to the methods of this document, but when an edge router serves as a gateway for many edge nodes it is important that the router implement quotas (hard limits) and prioritization (soft limits) for both storage size and forwarding throughput for each edge node.
+If quotas are not present, it could be possible for a single edge node to monopolize either storage or LAN throughput on the router and cause denial-of-service to other edge nodes.
+The algorithms or techniques used to allocate per-node quotas or priorities are outside the scope of this document. 
+      </t>
+    </section>
+  </middle>
+  <back>
+    <references>
+      <name>References</name>
+      <references>
+        <name>Normative References</name>
+        <reference anchor="IANA-BP" target="https://www.iana.org/assignments/bundle/">
+          <front>
+            <title>Bundle Protocol</title>
+            <author>
+              <organization>IANA</organization>
+            </author>
+            <date/>
+          </front>
+        </reference>
+        <reference anchor="IANA-SVC" target="https://www.iana.org/assignments/service-names-port-numbers/">
+          <front>
+            <title>Service Name and Transport Protocol Port Number Registry</title>
+            <author>
+              <organization>IANA</organization>
+            </author>
+            <date/>
+          </front>
+        </reference>
+        <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.1034.xml"/>
+        <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.1035.xml"/>
+        <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.2119.xml"/>
+        <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.2136.xml"/>
+        <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.2782.xml"/>
+        <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.4838.xml"/>
+        <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.6762.xml"/>
+        <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.6763.xml"/>
+        <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.8174.xml"/>
+        <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.9171.xml"/>
+        <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.9174.xml"/>
+      </references>
+      <references>
+        <name>Informative References</name>
+        <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.0793.xml"/>
+        <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.2131.xml"/>
+        <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.2462.xml"/>
+        <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.3748.xml"/>
+        <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.3927.xml"/>
+        <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.4291.xml"/>
+        <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.8368.xml"/>
+        <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.8376.xml"/>
+        <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.8415.xml"/>
+        <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.9172.xml"/>
+      </references>
+    </references>
+    <section anchor="sec-doc-ack" numbered="false">
+      <name>Acknowledgments</name>
+      <t>
+      </t>
+    </section>
+  </back>
+</rfc>

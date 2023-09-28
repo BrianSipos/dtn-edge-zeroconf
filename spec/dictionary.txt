@@ -1,0 +1,9 @@
+ADU
+BCP
+BP
+BPA
+BPv
+CCSDS
+DTN
+IANA
+interoperate
