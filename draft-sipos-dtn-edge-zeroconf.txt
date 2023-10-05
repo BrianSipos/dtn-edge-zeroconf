@@ -4,8 +4,7 @@
 
 Delay-Tolerant Networking                                       B. Sipos
 Internet-Draft                                                   JHU/APL
-Updates: 9171 (if approved)                               5 October 2023
-Intended status: Informational                                          
+Intended status: Informational                            5 October 2023
 Expires: 7 April 2024
 
 
@@ -45,11 +44,12 @@ Copyright Notice
    Copyright (c) 2023 IETF Trust and the persons identified as the
    document authors.  All rights reserved.
 
-   This document is subject to BCP 78 and the IETF Trust's Legal
-   Provisions Relating to IETF Documents (https://trustee.ietf.org/
-   license-info) in effect on the date of publication of this document.
-   Please review these documents carefully, as they describe your rights
-   and restrictions with respect to this document.  Code Components
+
+
+
+
+
+
 
 
 
@@ -58,6 +58,11 @@ Sipos                     Expires 7 April 2024                  [Page 1]
 Internet-Draft                BP Zero-Conf                  October 2023
 
 
+   This document is subject to BCP 78 and the IETF Trust's Legal
+   Provisions Relating to IETF Documents (https://trustee.ietf.org/
+   license-info) in effect on the date of publication of this document.
+   Please review these documents carefully, as they describe your rights
+   and restrictions with respect to this document.  Code Components
    extracted from this document must include Revised BSD License text as
    described in Section 4.e of the Trust Legal Provisions and are
    provided without warranty as described in the Revised BSD License.
@@ -101,11 +106,6 @@ Table of Contents
    complex physical and organizational domains, but this power comes at
    the cost of highly complex configuration on each node and a
    consistency of configurations between adjacent nodes.  That necessary
-   configuration represents a barrier to entry for deploying a simple
-   edge node, _e.g._ one which is intended to mostly relay single-
-   application data and rely on external BP routers to handle
-   complexities associated with network topology and its time-variance.
-
 
 
 
@@ -113,6 +113,11 @@ Sipos                     Expires 7 April 2024                  [Page 2]
 
 Internet-Draft                BP Zero-Conf                  October 2023
 
+
+   configuration represents a barrier to entry for deploying a simple
+   edge node, _e.g._ one which is intended to mostly relay single-
+   application data and rely on external BP routers to handle
+   complexities associated with network topology and its time-variance.
 
    The situation which this document addresses is shown in Figure 1,
    where one or more BP edge router acts as a gateway between an
@@ -158,11 +163,6 @@ Internet-Draft                BP Zero-Conf                  October 2023
    The zero-configuration CLA method defined in Section 3 does not apply
    to the following situations:
 
-   Non-IP Networks:  The mechanims in this document rely on functions
-
-
-
-
 
 
 Sipos                     Expires 7 April 2024                  [Page 3]
@@ -170,6 +170,7 @@ Sipos                     Expires 7 April 2024                  [Page 3]
 Internet-Draft                BP Zero-Conf                  October 2023
 
 
+   Non-IP Networks:  The mechanims in this document rely on functions
       specific to IP networks which are non-challenged and can operate
       protocols like mDNS [RFC6762] and TCP [RFC0793].  When needing to
       operate a node with a non-IP underlayer network, these protocols
@@ -217,7 +218,6 @@ Internet-Draft                BP Zero-Conf                  October 2023
       persistent.
 
    Independent Applications:  The stateless mode of operating a BPA
-
 
 
 
