@@ -797,7 +797,7 @@ Internet-Draft                BP Zero-Conf                  October 2023
       |  because they are unidirectional with respect to using network
       |  parameters to transfer to a peer.  The router would need to
       |  discover edge nodes to send UDPCL transfers in the other
-      |  direction or to send LTP report segments.
+      |  direction or to send LTP segments to the edge node.
 
    The CL in this case need not be session-oriented but reliable
    sessions do make it easier to detect transmission failures and report
