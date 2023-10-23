@@ -480,7 +480,7 @@ Because the DNS-SD is not symmetric with respect to the nodes using it, with rou
         <aside>
           <t>
 For example UDPCL and LTPCL, as they are currently defined in <xref target="RFC7122"/> will not be usable with the mechanism of <xref target="sec-zeroconf"/> because they are unidirectional with respect to using network parameters to transfer to a peer.
-The router would need to discover edge nodes to send UDPCL transfers in the other direction or to send LTP report segments.
+The router would need to discover edge nodes to send UDPCL transfers in the other direction or to send LTP segments to the edge node.
           </t>
         </aside>
         <t>
