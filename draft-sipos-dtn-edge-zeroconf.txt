@@ -4,13 +4,13 @@
 
 Delay-Tolerant Networking                                       B. Sipos
 Internet-Draft                                                   JHU/APL
-Intended status: Informational                            5 October 2023
-Expires: 7 April 2024
+Intended status: Informational                           23 October 2023
+Expires: 25 April 2024
 
 
 Lightweight Bundle Protocol Edge Node with Zero-Configuration and Zero-
                                  State
-                    draft-sipos-dtn-edge-zeroconf-00
+                    draft-sipos-dtn-edge-zeroconf-01
 
 Abstract
 
@@ -37,7 +37,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 7 April 2024.
+   This Internet-Draft will expire on 25 April 2024.
 
 Copyright Notice
 
@@ -53,7 +53,7 @@ Copyright Notice
 
 
 
-Sipos                     Expires 7 April 2024                  [Page 1]
+Sipos                     Expires 25 April 2024                 [Page 1]
 
 Internet-Draft                BP Zero-Conf                  October 2023
 
@@ -70,25 +70,32 @@ Internet-Draft                BP Zero-Conf                  October 2023
 Table of Contents
 
    1.  Introduction  . . . . . . . . . . . . . . . . . . . . . . . .   2
-     1.1.  Scope . . . . . . . . . . . . . . . . . . . . . . . . . .   3
+     1.1.  Scope . . . . . . . . . . . . . . . . . . . . . . . . . .   4
      1.2.  Terminology . . . . . . . . . . . . . . . . . . . . . . .   5
-   2.  Protocol Description  . . . . . . . . . . . . . . . . . . . .   5
+   2.  Protocol Description  . . . . . . . . . . . . . . . . . . . .   6
      2.1.  Edge Router Requirements  . . . . . . . . . . . . . . . .   6
      2.2.  High-Availability Configurations  . . . . . . . . . . . .   7
    3.  Zero-Configuration CLA Discovery  . . . . . . . . . . . . . .   7
-     3.1.  Service Registration  . . . . . . . . . . . . . . . . . .   9
-     3.2.  Service Lookup  . . . . . . . . . . . . . . . . . . . . .   9
-   4.  Zero-State BPA Operation  . . . . . . . . . . . . . . . . . .  10
-     4.1.  Bundle Transmission . . . . . . . . . . . . . . . . . . .  11
-     4.2.  Bundle Reception  . . . . . . . . . . . . . . . . . . . .  12
-   5.  Relaxed Limits for More Situations  . . . . . . . . . . . . .  13
-   6.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .  13
-   7.  Security Considerations . . . . . . . . . . . . . . . . . . .  13
-   8.  References  . . . . . . . . . . . . . . . . . . . . . . . . .  14
-     8.1.  Normative References  . . . . . . . . . . . . . . . . . .  14
-     8.2.  Informative References  . . . . . . . . . . . . . . . . .  15
-   Acknowledgments . . . . . . . . . . . . . . . . . . . . . . . . .  16
-   Author's Address  . . . . . . . . . . . . . . . . . . . . . . . .  16
+     3.1.  Parameters  . . . . . . . . . . . . . . . . . . . . . . .   8
+     3.2.  Service Offering  . . . . . . . . . . . . . . . . . . . .   9
+     3.3.  Service Enumeration . . . . . . . . . . . . . . . . . . .  10
+     3.4.  Service Use . . . . . . . . . . . . . . . . . . . . . . .  10
+   4.  Zero-State BPA Operation  . . . . . . . . . . . . . . . . . .  11
+     4.1.  Bundle Transmission . . . . . . . . . . . . . . . . . . .  12
+     4.2.  Bundle Reception  . . . . . . . . . . . . . . . . . . . .  13
+     4.3.  Router Side . . . . . . . . . . . . . . . . . . . . . . .  13
+   5.  Relaxed Assumptions for More Situations . . . . . . . . . . .  14
+     5.1.  Relaxation of IP LAN Assumption . . . . . . . . . . . . .  14
+     5.2.  Relaxation of TCPCL Assumption  . . . . . . . . . . . . .  14
+     5.3.  Relaxation of Router Connectivity Assumption  . . . . . .  15
+     5.4.  Relaxation of Single Application Assumption . . . . . . .  16
+   6.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .  16
+   7.  Security Considerations . . . . . . . . . . . . . . . . . . .  16
+   8.  References  . . . . . . . . . . . . . . . . . . . . . . . . .  17
+     8.1.  Normative References  . . . . . . . . . . . . . . . . . .  17
+     8.2.  Informative References  . . . . . . . . . . . . . . . . .  18
+   Acknowledgments . . . . . . . . . . . . . . . . . . . . . . . . .  20
+   Author's Address  . . . . . . . . . . . . . . . . . . . . . . . .  20
 
 1.  Introduction
 
@@ -98,7 +105,14 @@ Table of Contents
    Existing Bundle Protocol Agent (BPA) and Convergence Layer Adaptor
    (CLA) implementations treat BP-layer and network-layer configuration
    as externally supplied and managed data; this is the configuration
-   burden to operate a BP node (including its BPA and variaous CLAs).
+   burden to operate a BP node (including its BPA and various CLAs).
+
+
+
+Sipos                     Expires 25 April 2024                 [Page 2]
+
+Internet-Draft                BP Zero-Conf                  October 2023
+
 
    A general-purpose BP node is designed to operate in environments with
    complex and diverse topologies, schedules, and underlayer networks.
@@ -106,14 +120,6 @@ Table of Contents
    complex physical and organizational domains, but this power comes at
    the cost of highly complex configuration on each node and a
    consistency of configurations between adjacent nodes.  That necessary
-
-
-
-Sipos                     Expires 7 April 2024                  [Page 2]
-
-Internet-Draft                BP Zero-Conf                  October 2023
-
-
    configuration represents a barrier to entry for deploying a simple
    edge node, _e.g._ one which is intended to mostly relay single-
    application data and rely on external BP routers to handle
@@ -132,10 +138,10 @@ Internet-Draft                BP Zero-Conf                  October 2023
              ---- Core Network ----|------- IP LAN ----------
                 __   _
               _(  )_( )_       +--------+   BP/  +--------+
-             (          )  BP  |  Edge  |-+ TCP  |  Edge  |-+
+             (          )  BP  |  Edge  |   TCP  |  Edge  |-+
               )  nodes (<=====>| Router |<------>|  Node  | |
-             (_   _    _)      +--------+ |      +--------+ |
-               (_) (__)         +-----^---+       +--^------+
+             (_   _    _)      +--------+        +--------+ |
+               (_) (__)               |           +--|------+
                                       |              |
                                       +---- mDNS ----+
                                            or DNS
@@ -150,9 +156,19 @@ Internet-Draft                BP Zero-Conf                  October 2023
 
    While the methods of this document can provide an easy way for an
    edge node to access a BP network, there are many situations listed in
-   Section 1.1 where these methods do not apply.  These caveats to use
+   Section 1.1 where these methods do not apply along with some
+   potential relaxations discussed in Section 5.  These caveats to use
    do not diminish the utility in situations where the methods described
    here _do_ apply.
+
+
+
+
+
+Sipos                     Expires 25 April 2024                 [Page 3]
+
+Internet-Draft                BP Zero-Conf                  October 2023
+
 
 1.1.  Scope
 
@@ -163,18 +179,20 @@ Internet-Draft                BP Zero-Conf                  October 2023
    The zero-configuration CLA method defined in Section 3 does not apply
    to the following situations:
 
-
-
-Sipos                     Expires 7 April 2024                  [Page 3]
-
-Internet-Draft                BP Zero-Conf                  October 2023
-
-
-   Non-IP Networks:  The mechanims in this document rely on functions
+   Non-IP Networks:  The mechanisms in this document rely on functions
       specific to IP networks which are non-challenged and can operate
       protocols like mDNS [RFC6762] and TCP [RFC0793].  When needing to
       operate a node with a non-IP underlayer network, these protocols
-      will not function out-of-the-box.
+      will not function out-of-the-box.  See Section 5.1 for discussion
+      of non-IP networks.
+
+   Non-TCP Convergence Layers:  The mechanisms in this document rely on
+      a router to offer a single CL service which can transfer bundles
+      in both directions between the router and edge nodes based on just
+      the edge node discovering the network parameters of the router.
+      When needing to operate a node with CL(s) other than the TCPCL
+      this unidirectional discovery may not work.  See Section 5.2 for
+      discussion of other CL types.
 
    Multiple Connectivity:  When a BP node is functioning as a router, it
       will necessarily need to configure multiple connectivity to peer
@@ -198,11 +216,21 @@ Internet-Draft                BP Zero-Conf                  October 2023
       more applicable and more efficient than the DNS-based method of
       Section 3.
 
+
+
+
+
+
+Sipos                     Expires 25 April 2024                 [Page 4]
+
+Internet-Draft                BP Zero-Conf                  October 2023
+
+
       |  There has not yet been investigation into whether or not the
-      |  zero-configuraiton method defined in this document can apply to
+      |  zero-configuration method defined in this document can apply to
       |  situations like low-power wide area network (LPWAN) as
       |  described in [RFC8376].  There is no technical reason why it
-      |  should not work, but because it has a reliance on DNS it runs
+      |  would not work, but because it has a reliance on DNS it runs
       |  into the issues described in Section 4.9 of [RFC8376].
 
    The zero-state BPA method described in Section 4 does not apply to
@@ -213,25 +241,17 @@ Internet-Draft                BP Zero-Conf                  October 2023
       bundle flow.  In a situation where an application needs to
       transmit bundles but the CLA to the router is not available, this
       document does not define a "correct" behavior but relies on the
-      application to manage scheduled activities.  See Section 5 for
+      application to manage scheduled activities.  See Section 5.3 for
       some alternatives when the edge router connectivity is not
       persistent.
 
    Independent Applications:  The stateless mode of operating a BPA
-
-
-
-Sipos                     Expires 7 April 2024                  [Page 4]
-
-Internet-Draft                BP Zero-Conf                  October 2023
-
-
       requires that the BPA itself does not need to retain received
       bundles.  This is accomplished by operating the BPA only while the
       overlaying application itself is capable of having bundles
       delivered to it via all registered EIDs.  If there are multiple
-      independent applicaitons with time-varying registrations that do
-      not coincide then this method will not apply.  See Section 5 for
+      independent applications with time-varying registrations that do
+      not coincide then this method will not apply.  See Section 5.4 for
       some alternatives when multiple applications are needed.
 
 1.2.  Terminology
@@ -243,23 +263,36 @@ Internet-Draft                BP Zero-Conf                  October 2023
    capitals, as shown here.
 
    This document distinguishes between cases where a BP node is expected
-   to function as an intermediate "router" (either on a network exterior
-   or in its interior) versus an "edge node" with a more straightforward
-   workload to source from and deliver to overlayer applications.
+   to function as an intermediate "router" (either on a network edge or
+   in its interior) versus an "edge node" with a more straightforward
+   workload to source from and deliver to overlayer applications.  In
+   the zero-configuration mechanism of Section 3 the edge router is the
+   entity which offers its service and the edge node enumerates and uses
+   the service.
 
    This document also distinguishes between a "core network" which
-   extends up to, but not beyond, its edge routers from the broadest
-   sense of "network" that includes all nodes sending, delivering, or
+   extends up to, but not beyond, its edge routers from the overall
+   "network" which includes all nodes sourcing, delivering, or
    forwarding bundles.  When discussing behaviors between the edge
+
+
+
+Sipos                     Expires 25 April 2024                 [Page 5]
+
+Internet-Draft                BP Zero-Conf                  October 2023
+
+
    routers and edge nodes, this document uses the term "IP LAN" to
    distinguish that IP-based edge topology from whatever means other
    nodes in the core network have to exchange bundles.  The IP LAN is
    assumed to have the expected properties of an IP network, and not
    behave as a "challenged network" as described in [RFC4838].
 
-   For the stateless agent of Section 4, there is a separation between
+   For the zero-state agent of Section 4, there is a separation between
    "TX session" used solely to transmit bundles and "RX session" used to
-   receive bundles.
+   receive bundles.  Both of these use the same TCPCL mechanism just
+   with different session parameters to control what transfers are
+   acceptable in each session.
 
 2.  Protocol Description
 
@@ -267,20 +300,11 @@ Internet-Draft                BP Zero-Conf                  October 2023
    needs to be automatically configured.  This is something which can
    already be achieved using methods such as the Dynamic Host
    Configuration Protocol (DHCP) of [RFC2131] and [RFC8415], Stateless
-   Address Autoconfiguration of [RFC2462], or link-local addressing of
-   [RFC3927] and [RFC4291].  There MAY be link- and network-level
-   authentication and authorization applied to edge nodes.  The form of
-   these access control methods is a network policy matter.
-
-
-
-
-
-
-Sipos                     Expires 7 April 2024                  [Page 5]
-
-Internet-Draft                BP Zero-Conf                  October 2023
-
+   Address Autoconfiguration of [RFC2462] and Neighbor Discovery
+   Protocol of [RFC4861], and link-local addressing of [RFC3927] and
+   [RFC4291].  There MAY be link- and network-level authentication and
+   authorization applied to edge nodes.  The need for and form of these
+   access control methods is a network policy matter.
 
    Once an edge node has an IP address and local network configuration,
    the method of Section 3 is used to lookup TCPCL connection parameters
@@ -294,73 +318,51 @@ Internet-Draft                BP Zero-Conf                  October 2023
    act as an edge router for associated BP edge nodes within the same IP
    LAN.  The edge router SHALL act as a TCPCL passive listener in
    accordance with Section 4 of [RFC9174].  The edge router MAY act as
-   the active or passvie roles of any number of other convergence
+   the active or passive roles of any number of other convergence
    layers, but those are immaterial to the functioning of these methods.
 
-   When a request to establish a TCPCL session is received, the edge
-   router SHALL respond with the following initialization parameters:
-
-   Transfer MRU:  Set to some non-zero limit to indicate that the router
-      is willing to receive bundles within the session.
-
-   Node ID:  Set to the Node ID associated with the router.
-
-   All other session initialization parameters are left as an
-   implementation matter.
-
-   At the BPA level, the edge router SHALL be willing to forward and
-   store bundles sourced by and destined for all of the edge nodes for
-   which it establishes TCPCL sessions.  The fact of being a "router"
-   implies all of the activities required by [RFC9171] will be done for
-   those edge-node-related bundles.  It is an implementation matter for
-   the router to decide if and when to limit new TCPCL sessions or
-   transfers to conserve resources.
-
-   After establishing a TCPCL session with an edge node, the edge router
-   SHALL treat contact with the edge node as persistent for any interior
-   routing or discovery protocols within the BP network.  Even if
-   contact with the edge node is not truly persistent, when it
-   establishes TCPCL sessions with the edge node the edge router assumes
-   responsibility for queueing bundles destined for that edge node.  The
-   assumption here is that the IP network between edge router and node
-   is persistent enough to appear continuous over time to the core BP
-   network.
-
-   One side effect of these required behaviors is that edge nodes on the
-   LAN can also send bundles between each other (via the edge router)
-   without any prior configuration.  The assumption of that behiavor is
-   that the applications are aware of each other's EIDs from
+   More specific requirements about how the edge router interacts with
+   the edge nodes via TCPCL are included in Section 3.4.  One side
+   effect of those required behaviors is that edge nodes on the LAN can
+   also send bundles between each other (via the edge router) without
+   any prior configuration.
 
 
 
-Sipos                     Expires 7 April 2024                  [Page 6]
+
+
+
+
+Sipos                     Expires 25 April 2024                 [Page 6]
 
 Internet-Draft                BP Zero-Conf                  October 2023
 
 
-   configuration outside of the BP or IP networks.  Future work on BP
-   node and service discovery could be used to avoid this assumption;
-   once an edge node is able to communicate at the BP layer it could
-   discover BP services via BP itself.
+   A key assumption of that behavior is that the applications are aware
+   of each other's EIDs from configuration outside of the BP or IP
+   networks.  Future work on BP node and service discovery could be used
+   to avoid this assumption; once an edge node is able to communicate at
+   the BP layer it could discover BP services via BP itself.
 
 2.2.  High-Availability Configurations
 
-   The SRV fields for priority and weight defined in [RFC2782] allow for
-   a large variety of possible network configurations with multiple edge
-   routers providing access to a core network.  Due to the need for edge
-   routers to queue bundles destined for edge nodes and the possibility
-   of an edge router serving an unbounded number of edge nodes, it is
-   RECOMMENDED to provide high-availability of service within a single
-   edge router rather than using mulitple separate routers.  When
-   multiple edge routers are used on an IP LAN it is RECOMMENDED to give
-   them distinct SRV priority fields so that one router is the active
-   provider and the other(s) act as warm standby providers.
+   The service parameters for _priority_ and _weight_ described in
+   Section 3 allow for a large variety of possible network
+   configurations with multiple edge routers providing access to a core
+   network.  Due to the need for edge routers to queue bundles destined
+   for edge nodes and the possibility of an edge router serving an
+   unbounded number of edge nodes, it is RECOMMENDED to provide high-
+   availability of service within a single edge router rather than using
+   multiple separate routers.  When multiple edge routers are used on an
+   IP LAN it is RECOMMENDED to give them distinct SRV priority fields so
+   that one router is the active provider and the other(s) act as warm
+   standby providers.
 
-   The risk when multiple routers are registered as TCPCL listeners with
-   the same SRV priority is that a single edge node with limited
+   The risk when multiple routers are offered as TCPCL listeners with
+   the same priority is that a single edge node with limited
    connectivity (_e.g._, for power saving purposes) would choose
    different router instances at different times and require that the
-   edge routers themselves coordiante and forward queued bundles to the
+   edge routers themselves coordinate and forward queued bundles to the
    currently-connected router.  Although this is an acceptable and
    allowed situation, it adds hops to a bundle's path, increases
    resource burdens on the edge routers, and complicates the ways that
@@ -368,40 +370,51 @@ Internet-Draft                BP Zero-Conf                  October 2023
 
 3.  Zero-Configuration CLA Discovery
 
-   This section defines a method to allow BP routers to advertise their
-   presenece in an IP LAN and for edge nodes to discover those routers,
-   both via DNS-based Service Discovery (DNS-SD) as defined in
-   [RFC6763].
+   This section defines a method to allow BP routers to advertise
+   (offer) their presence in an IP LAN and for edge nodes to discover
+   (enumerate and use) those routers, all via DNS-based Service
+   Discovery (DNS-SD) as defined in [RFC6763].
 
-   It is important to understand that the method defined in this section
-   only applies to nodes willing to act as a gateway BP router for thir
-   IP LAN.  Any BP node which does not intend to forward bundles (both
-   to and from) other nodes in a LAN SHALL NOT advertise their TCPCL
-   listening state.
+   One aspect of DNS-SD is that it works equivalently over multicast DNS
+   (mDNS) and traditional unicast DNS, or both simultaneously, but does
+   not require both to be operating in the IP LAN.  It is a network
+   policy issue to determine which DNS strategy is more appropriate in
+   any particular deployment, and it is an implementation detail on both
+   edge node and router side to determine which (or both) DNS strategy
+   to enumerate on and offer on respectively.
 
-
-
-
-
-
-
-
+      |  There are benefits and drawbacks to both multicast and unicast
+      |  DNS strategies as discussed in [RFC6763].  While multicast DNS
+      |  is more hands-off and closer to true "zero configuration"
 
 
 
-Sipos                     Expires 7 April 2024                  [Page 7]
+Sipos                     Expires 25 April 2024                 [Page 7]
 
 Internet-Draft                BP Zero-Conf                  October 2023
 
 
-      |  If a non-routing node were to advertise its TCPCL listening
-      |  state the node can still refuse to receive any bundles within
-      |  the TCPCL session.  Even a routing node can refuse to receive
-      |  individual bundles from any particular last-hop node or for any
-      |  other reason.  It is a performance optimization for non-routing
-      |  nodes to not advertisze their TCPCL listening so that other
-      |  nodes don't attempt to establish TCPCL sessions only to
-      |  discover the node is not willing to accept bundles.
+      |  operation it lacks in security guarantees.  Unicast DNS can
+      |  optimize for caching and provide potentially more trusted
+      |  notion of service discovery (because a router needs to be
+      |  authorized by the DNS to be present under a domain).
+
+   It is important to understand that the router defined in this
+   document only applies to nodes willing to act as a gateway BP router
+   for their IP LAN.  Any BP node which does not intend to forward
+   bundles (both to and from) other nodes in a LAN SHALL NOT offer TCPCL
+   over DNS-SD.
+
+      |  If a non-routing node were to offer TCPCL over DNS-SD the node
+      |  can still refuse to receive any bundles within the TCPCL
+      |  session.  Even a routing node can refuse to receive individual
+      |  bundles from any particular last-hop node or for any other
+      |  reason.  It is a performance optimization for non-routing nodes
+      |  to not offer TCPCL over DNS-SD so that other nodes don't
+      |  attempt to establish TCPCL sessions only to discover the node
+      |  is not willing to accept bundles.
+
+3.1.  Parameters
 
    The DNS-SD naming convention of [RFC6763] combined with the service
    name registered in [IANA-SVC] for the TCPCL by Section 8.1 of
@@ -411,8 +424,8 @@ Internet-Draft                BP Zero-Conf                  October 2023
 
                    Figure 2: DNS-SD Relative Domain Name
 
-   When used with the multicast DNS (mDNS) reserved local domain of
-   [RFC6762] results in the following FQDN:
+   When used with the mDNS reserved local domain of [RFC6762] results in
+   the following FQDN:
 
    _dtn-bundle._tcp.local.
 
@@ -430,6 +443,13 @@ Internet-Draft                BP Zero-Conf                  October 2023
    additional TXT RR parameters, as hints about the TCPCL listener, in
    accordance with Section 6 of [RFC6763] of:
 
+
+
+Sipos                     Expires 25 April 2024                 [Page 8]
+
+Internet-Draft                BP Zero-Conf                  October 2023
+
+
    txtvers (TXT RR Version):  This required key has a value indicating
       the current TXT RR version as an integer.  This document defines
       version 1.
@@ -438,40 +458,28 @@ Internet-Draft                BP Zero-Conf                  October 2023
       indicating the latest supported TCPCL version as an integer.  When
       not present the default version is 4.
 
+3.2.  Service Offering
 
-
-
-
-
-
-
-Sipos                     Expires 7 April 2024                  [Page 8]
-
-Internet-Draft                BP Zero-Conf                  October 2023
-
-
-3.1.  Service Registration
-
-   When an edge router desires to expose its willingness via mDNS, the
-   FQDN of Figure 3 SHALL be registered using DNS PTR and/or SRV
-   resource records (RRs) with fields defined in [RFC6763] and [RFC2782]
+   When an edge router desires to offer its willingness via mDNS, the
+   FQDN of Figure 3 SHALL be offered using DNS PTR and/or SRV resource
+   records (RRs) with fields defined in [RFC6763] and [RFC2782]
    corresponding to its TCPCL listening configuration.
 
    An example of this for a router instance name rtr1 operating with
    service priority 0, weight 0, DNS name host-name, and standard TCPCL
-   port is below, with TTL and class fields elided.
+   port is below, with multiple parameter strings in accordance with
+   Section 6.3 of [RFC6763], and with TTL and class fields elided.
 
    _dtn-bundle._tcp.local.       PTR  rtr1._dtn-bundle._tcp.local.
    rtr1._dtn-bundle._tcp.local.  SRV  0 0 4556 host-name.local.
    rtr1._dtn-bundle._tcp.local.  TXT  "txtvers=1" "protovers=4"
 
-   When edge routers are managed via centralized DNS, the RDN of
-   Figure 2 SHALL be registered in the local domain zone using a DNS SRV
-   RR with fields defined in [RFC2782] corresponding to its TCPCL
-   listening configuration.  Routers MAY update DNS RRs via an in-band
-   protocol such as DNS Update [RFC2136].  Multiple edge routers MAY be
-   present in an IP LAN and identified with SRV RR containing different
-   priority and/or weight fields.
+   When edge routers are managed via unicast DNS, the RDN of Figure 2
+   SHALL be offered in the local domain zone using a DNS SRV RR with
+   fields defined in [RFC2782] corresponding to its TCPCL listening
+   configuration.  Multiple edge routers MAY be present in an IP LAN and
+   identified with SRV RR containing different priority fields (see
+   Section 2.2).
 
    An example of multiple SRV RRs in the same domain with different
    priorities is below, with TTL and class fields elided.
@@ -483,7 +491,22 @@ Internet-Draft                BP Zero-Conf                  October 2023
    rtr2._dtn-bundle._tcp.example.com.  SRV  20  0 4556 backup.example.com.
    rtr2._dtn-bundle._tcp.example.com.  TXT  ""
 
-3.2.  Service Lookup
+   Edge routers MAY update DNS RRs via an in-band protocol such as DNS
+   Update [RFC2136].  Edge nodes MAY monitor RR changes via an in-band
+   protocol such as DNS Push [RFC8765].
+
+
+
+
+
+
+
+Sipos                     Expires 25 April 2024                 [Page 9]
+
+Internet-Draft                BP Zero-Conf                  October 2023
+
+
+3.3.  Service Enumeration
 
    For the edge node wanting BP network access, the method is as simple
    as retrieving the SRV RR for the RDS of Figure 2, either in the mDNS
@@ -494,43 +517,57 @@ Internet-Draft                BP Zero-Conf                  October 2023
    attempt to resolve the SRV and TXT RRs in accordance with [RFC6763]
    by one or both of the following:
 
-   1.  Lookup the FQDN of Figure 3 via mDNS in accordance with
-       [RFC6762].
+   1.  Query the FQDN of Figure 3 via mDNS in accordance with [RFC6762].
 
-
-
-
-
-Sipos                     Expires 7 April 2024                  [Page 9]
-
-Internet-Draft                BP Zero-Conf                  October 2023
-
-
-   2.  Lookup the RDN of Figure 2 within one or more search domains via
+   2.  Query the RDN of Figure 2 within one or more search domains via
        DNS in accordance with [RFC1035] or equivalent protocol.
 
-   If the SRV or TXT lookup fails (which includes a lookup result with a
-   target name of ".") the edge node SHALL treat edge routers as
-   currently unavailable from the IP LAN.  If SRV or TXT lookup fails,
-   the edge node MAY attempt future lookups based on a schedule
-   configured on the node.  The specifics of reattempts at SRV or TXT
-   record retrieval are an implementation matter (see Section 5 for
-   possible alternatives).
+   If a SRV or TXT query fails (which includes a query result with a
+   target name of ".") the edge node SHALL treat the associated edge
+   router as currently unavailable from the IP LAN.  If a SRV or TXT
+   query fails, the edge node MAY attempt future queries based on a
+   schedule configured on the node.  The specifics of reattempts at SRV
+   or TXT record retrieval are an implementation matter (see Section 5
+   for possible alternatives).
 
-   If the SRV lookup succeeds, the edge node SHALL use the priority and
+   If the SRV query succeeds, the edge node SHALL use the priority and
    weight fields of each SRV record fields in accordance with [RFC2782]
-   to choose a single instance.  When a TCPCL session is needed for
-   transfers (see Section 4) and one or more service instances are
-   available, the edge node SHALL use SRV record fields of a chosen
-   instance in accordance with the active role of [RFC9174].
+   to choose an instance to use.
+
+3.4.  Service Use
+
+   This section discusses how an edge node can use a chosen router from
+   an enumerated list of available routers.  Detailed requirements for
+   how an edge node and router configure and operate TCPCL sessions are
+   given in Section 4.
+
+   When a TCPCL session is needed for transfers and one or more service
+   instances are available, the edge node SHALL use SRV and TXT records
+   of a chosen instance to identify a specific DNS name to connect to
+   using the active role of [RFC9174].
 
    When needing to establish a TCPCL session, an edge node SHOULD use
    the same service instance for all TCPCL sessions until there is some
    failure to keep up an existing session or failure in establishing a
-   new session.  An edge node MAY use different servcie instnaces at the
+   new session.  An edge node MAY use different service instances at the
    same time for different TCPCL sessions.  It is an implementation
    matter to determine which service instance, or what combination of
    instances, to use for needed TCPCL sessions.
+
+
+
+
+Sipos                     Expires 25 April 2024                [Page 10]
+
+Internet-Draft                BP Zero-Conf                  October 2023
+
+
+   Part of that connection to a DNS name involves resolving the name
+   into one or more IP addresses using an mDNS or DNS query.  An edge
+   node SHALL NOT assume DNS name resolution to IP address(es) for a
+   service instance is unchanging over time.  The edge node SHOULD use
+   methods of Happy Eyeballs Connection Setup [RFC8305] when resolving a
+   DNS name and attempting TCP connections.
 
 4.  Zero-State BPA Operation
 
@@ -548,27 +585,38 @@ Internet-Draft                BP Zero-Conf                  October 2023
    for how the application indicates these policies to the BPA.
 
    Using this method, the BPA can be implemented as a pure software
-   middleware under a BP-aware application.  Either the application or
-   BPA library could perform the procedures in a multi-threaded form,
-   but neither BP, nor TCPCL, nor this document require that the various
-   protocol processing be performed in parallel.
-
-
-
-
-
-Sipos                     Expires 7 April 2024                 [Page 10]
-
-Internet-Draft                BP Zero-Conf                  October 2023
-
+   library or middleware under a BP-aware application.  Either the
+   application or BPA could perform the procedures in a multi-threaded
+   form, but neither BP, nor TCPCL, nor this document require that the
+   various protocol processing be performed in parallel.
 
    The overall bundle flows are shown in Figure 5, which indicates how
    the transmission is handled fully independently from the reception,
-   and how reception can cause status reports but these can be generated
+   and how reception can cause status reports but these can be sourced
    synchronously and handled separately from application-caused
    transmission.  This diagram does not show possible security
    processing within the flows between sessions and the application or
    administrative element.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Sipos                     Expires 25 April 2024                [Page 11]
+
+Internet-Draft                BP Zero-Conf                  October 2023
+
 
    -- Network --|------- CLA ------|------- BPA ------|----- App ------
 
@@ -609,19 +657,22 @@ Internet-Draft                BP Zero-Conf                  October 2023
    are finished, the TX session SHALL be terminated with a Reason Code
    of Unknown (0x00).
 
+   If TX session establishment fails, the application SHALL be informed
+   that the associated bundles were not sent.  It is an implementation
+   matter for how to handle this kind of failure (_e.g._, queuing within
+   the BPA as in Section 5 or within the application).
 
 
 
 
-Sipos                     Expires 7 April 2024                 [Page 11]
+
+
+
+
+Sipos                     Expires 25 April 2024                [Page 12]
 
 Internet-Draft                BP Zero-Conf                  October 2023
 
-
-   If TX session establishment fails, the application SHALL be informed
-   that the associated bundles were not sent.  It is an implementation
-   matter for how to handle this kind of failure (_e.g._, queueing
-   within the BPA as in Section 5 or within the application).
 
 4.2.  Bundle Reception
 
@@ -649,7 +700,7 @@ Internet-Draft                BP Zero-Conf                  October 2023
    When a transfer is received in the RX session it SHALL be immediately
    processed in accordance with [RFC9171].  If the received bundle has a
    Destination to be delivered to the overlying application it SHALL be
-   delivered immediately to the listening applicaiton.  Otherwise, the
+   delivered immediately to the listening application.  Otherwise, the
    bundle SHALL be deleted.  In any case if during the processing of the
    received bundle it is necessary to send any administrative record
    (_e.g._, bundle status report), the transmission procedure of
@@ -658,46 +709,159 @@ Internet-Draft                BP Zero-Conf                  October 2023
    If RX session establishment fails, the application SHALL be informed
    that listening cannot be performed at the requested time.  It is an
    implementation matter for how to handle this kind of failure (_e.g._,
-   waiting for service availability as in Section 5).
+   waiting for service connectivity as in Section 5.3).
+
+4.3.  Router Side
+
+   When a request to establish a TCPCL session is received, the edge
+   router SHALL respond with the following initialization parameters:
+
+   Transfer MRU:  Set to some non-zero limit to indicate that the router
+      is willing to receive bundles within the session.
+
+   Node ID:  Set to the Node ID associated with the router.
 
 
 
 
 
-
-
-
-
-
-Sipos                     Expires 7 April 2024                 [Page 12]
+Sipos                     Expires 25 April 2024                [Page 13]
 
 Internet-Draft                BP Zero-Conf                  October 2023
 
 
-5.  Relaxed Limits for More Situations
+   All other session initialization parameters are left as an
+   implementation matter.
 
-   Because mDNS and DNS both have dynamic state, a library-based BPA can
-   keep an "egress" queue of bundles to be transmitted and wait for an
-   indication of edge router availability.  This is similar to how
-   current stateful BPAs operate, where the bundle source processing is
-   in a different thread of operation from the bundle forwarding
-   processing.
+   At the BPA level, the edge router SHALL be willing to forward and
+   store bundles sourced by and destined for all of the edge nodes for
+   which it establishes TCPCL sessions.  The fact of being a "router"
+   implies all of the activities required by [RFC9171] will be done for
+   those edge-node-related bundles.  It is an implementation matter for
+   the router to decide if and when to limit new TCPCL sessions or
+   transfers to conserve resources.
 
-   A library-based BPA can be used to host more than one independent
-   application if there is an "delivery" queue of bundles destined for
-   endpoints registered to known but non-listening applications.  This
-   is similar to how current stateful BPAs operate, where the bundle
-   reception processing is in a different thread of operation from the
-   bundle delivery processing.
+   After establishing a TCPCL session with an edge node, the edge router
+   SHALL treat contact with the edge node as persistent for any interior
+   routing or discovery protocols within the BP network.  Even if
+   contact with the edge node is not truly persistent, when it
+   establishes TCPCL sessions with the edge node the edge router assumes
+   responsibility for queuing bundles destined for that edge node.  The
+   assumption here is that the IP network between edge router and node
+   is persistent enough to appear continuous over time to the core BP
+   network.
 
-   In environments where the LAN is not IP-based, it is still possible
-   to use the zero-state BPA as defined in Section 4 with some
-   alternative reliable and flow-controlled CL.  The CL in this case
-   need not be session-oriented but reliable sessions do make it easier
-   to detect transmission failures and report them to the application.
-   In this situation, the DNS-SD discovery method will not work (as
-   there is no DNS) but there may be other, network-specific methods of
-   discovery or out-of-band CLA configuration will be needed.
+5.  Relaxed Assumptions for More Situations
+
+   This section discusses the assumptions from Section 1 and how some of
+   them can be relaxed at the expense of added configuration or internal
+   state.
+
+5.1.  Relaxation of IP LAN Assumption
+
+   The assumption allows the zero-configuration mechanism to make use of
+   IP-based technologies such as mDNS and DNS and ultimately the logic
+   of DNS-SD for router discovery.
+
+   In a non-IP LAN the DNS-SD discovery method will not work (as there
+   is no DNS) but there may be other, network-specific methods of
+   discovery or out-of-band CLA configuration will be needed.  In this
+   situation it is still possible to use the zero-state BPA as defined
+   in Section 4.
+
+5.2.  Relaxation of TCPCL Assumption
+
+   This assumption is that edge routers use TCPCL as a reliable, bi-
+   directional, and flow-controlled convergence layer for all edge
+   nodes.
+
+   In environments where some other converge layer is used which
+   operates over a protocol with a registered well-known service name
+   [IANA-SVC] the same DNS-SD technique can be used with that
+
+
+
+Sipos                     Expires 25 April 2024                [Page 14]
+
+Internet-Draft                BP Zero-Conf                  October 2023
+
+
+   alternative service name.  Because the DNS-SD is not symmetric with
+   respect to the nodes using it, with routers offering a service and
+   edge nodes using it, this mechanism still requires that the
+   convergence layer provide bi-directional bundle transfers based on
+   just one node knowing the network parameters to access another node.
+
+      |  For example UDPCL and LTPCL, as they are currently defined in
+      |  [RFC7122] will not be usable with the mechanism of Section 3
+      |  because they are unidirectional with respect to using network
+      |  parameters to transfer to a peer.  The router would need to
+      |  discover edge nodes to send UDPCL transfers in the other
+      |  direction or to send LTP report segments.
+
+   The CL in this case need not be session-oriented but reliable
+   sessions do make it easier to detect transmission failures and report
+   them to the application.  It is also important that there be some
+   kind of flow control mechanism within the LAN so that one edge node
+   cannot starve others of network resources.
+
+5.3.  Relaxation of Router Connectivity Assumption
+
+   The assumption of immediate connectivity to a gateway router whenever
+   an application needs to send a bundle results in the need for router
+   availability to be visible to the application sourcing bundles and
+   for that to act as an implied flow control mechanism for the
+   application.  If the router is not available or transfers are not
+   proceeding quickly enough, the application will need to hold-off or
+   back-off on sourcing new bundles.
+
+   Because there can be periods of time when no router is willing to
+   offer or establish TCPCL sessions or when a TX transfer is already in
+   progress, a BPA can keep an "egress" queue of bundles to be
+   transmitted and wait for an indication of edge router connectivity
+   before beginning the transfer.  This is similar to how current
+   stateful BPAs operate, where the bundle source processing is in a
+   different thread of operation from the bundle forwarding processing.
+
+   When such an egress queue is present, there is added state within the
+   BPA and also risk of resource exhaustion if that state grows too
+   large.  Because of this, even if an egress queue is used it is useful
+   for the application to have some visibility into the queue for flow
+   control purposes.
+
+
+
+
+
+
+
+
+
+Sipos                     Expires 25 April 2024                [Page 15]
+
+Internet-Draft                BP Zero-Conf                  October 2023
+
+
+5.4.  Relaxation of Single Application Assumption
+
+   This assumption allows a BPA to immediately and synchronously receive
+   and deliver bundles to a listening application.  When there is only a
+   single application there is never the possibility of one application
+   listening on an endpoint and another application not listening for
+   some interval of time.
+
+   A BPA can be used to host more than one independent application if
+   there is a "delivery" queue of bundles destined for endpoints
+   registered to known but non-listening applications.  This is similar
+   to how current stateful BPAs operate, where the bundle reception
+   processing is in a different thread of operation from the bundle
+   delivery processing.
+
+   When such an delivery queue is present, there is added state within
+   the BPA and also risk of resource exhaustion if that state grows too
+   large.  Because of this, even if a delivery queue is used it could be
+   useful for the application to have some visibility into the queue for
+   flow control purposes.
 
 6.  IANA Considerations
 
@@ -708,27 +872,12 @@ Internet-Draft                BP Zero-Conf                  October 2023
 
    To establish a local network address and network parameters, the edge
    node might be required to supply link- or network-layer credentials.
-   Even with existing protocols such as MACSec or IPSec, it is possible
-   to use the Extensible Authentication Protocl (EAP) of [RFC3748] with
-   the PKIX certificate profile of Section 4.4.2 of [RFC9174].  It is a
-   network policy for how access is granted and network addresses are
-   allocated or authorized.
-
-
-
-
-
-
-
-
-
-
-
-
-Sipos                     Expires 7 April 2024                 [Page 13]
-
-Internet-Draft                BP Zero-Conf                  October 2023
-
+   For some existing protocols such as MACSec or IPSec, it is possible
+   to use the Extensible Authentication Protocol (EAP) of [RFC3748] with
+   PKIX certificates for authentication and authorization.  For other
+   protocols such as SEcure Neighbor Discovery (SEND) [RFC3971], PKIX
+   certificates can be used directly.  It is a network policy for how
+   access is granted and network addresses are allocated or authorized.
 
    Within the zero-configuration specification of Section 3 there is no
    prohibition on the use of network-layer, DNS, or TCPCL security.  If
@@ -741,12 +890,20 @@ Internet-Draft                BP Zero-Conf                  October 2023
    not on an isolated network with its own link-layer or network-layer
    security.
 
+
+
+
+Sipos                     Expires 25 April 2024                [Page 16]
+
+Internet-Draft                BP Zero-Conf                  October 2023
+
+
    Within the zero-state specification of Section 4 there is no
    prohibition on the use of BP-layer security.  If required by network
-   policy, an edge node will provide BP integrity or confidentialy using
-   the BPSec facilities of [RFC9172] either as a security source or a
-   security acceptor.  A RECOMMENDED policy is to have the edge node
-   generate and process BPSec directly when possible, and to have the
+   policy, an edge node will provide BP integrity or confidentiality
+   using the BPSec facilities of [RFC9172] either as a security source
+   or a security acceptor.  A RECOMMENDED policy is to have the edge
+   node source and process BPSec directly when possible, and to have the
    associated edge router act as BPSec gateway otherwise.
 
    This consideration is not specific to the methods of this document,
@@ -775,17 +932,6 @@ Internet-Draft                BP Zero-Conf                  October 2023
               specification", STD 13, RFC 1035, DOI 10.17487/RFC1035,
               November 1987, <https://www.rfc-editor.org/info/rfc1035>.
 
-
-
-
-
-
-
-Sipos                     Expires 7 April 2024                 [Page 14]
-
-Internet-Draft                BP Zero-Conf                  October 2023
-
-
    [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
               Requirement Levels", BCP 14, RFC 2119,
               DOI 10.17487/RFC2119, March 1997,
@@ -800,6 +946,13 @@ Internet-Draft                BP Zero-Conf                  October 2023
               specifying the location of services (DNS SRV)", RFC 2782,
               DOI 10.17487/RFC2782, February 2000,
               <https://www.rfc-editor.org/info/rfc2782>.
+
+
+
+Sipos                     Expires 25 April 2024                [Page 17]
+
+Internet-Draft                BP Zero-Conf                  October 2023
+
 
    [RFC4838]  Cerf, V., Burleigh, S., Hooke, A., Torgerson, L., Durst,
               R., Scott, K., Fall, K., and H. Weiss, "Delay-Tolerant
@@ -818,6 +971,15 @@ Internet-Draft                BP Zero-Conf                  October 2023
               2119 Key Words", BCP 14, RFC 8174, DOI 10.17487/RFC8174,
               May 2017, <https://www.rfc-editor.org/info/rfc8174>.
 
+   [RFC8305]  Schinazi, D. and T. Pauly, "Happy Eyeballs Version 2:
+              Better Connectivity Using Concurrency", RFC 8305,
+              DOI 10.17487/RFC8305, December 2017,
+              <https://www.rfc-editor.org/info/rfc8305>.
+
+   [RFC8765]  Pusateri, T. and S. Cheshire, "DNS Push Notifications",
+              RFC 8765, DOI 10.17487/RFC8765, June 2020,
+              <https://www.rfc-editor.org/info/rfc8765>.
+
    [RFC9171]  Burleigh, S., Fall, K., and E. Birrane, III, "Bundle
               Protocol Version 7", RFC 9171, DOI 10.17487/RFC9171,
               January 2022, <https://www.rfc-editor.org/info/rfc9171>.
@@ -833,15 +995,6 @@ Internet-Draft                BP Zero-Conf                  October 2023
               DOI 10.17487/RFC0793, September 1981,
               <https://www.rfc-editor.org/info/rfc793>.
 
-
-
-
-
-Sipos                     Expires 7 April 2024                 [Page 15]
-
-Internet-Draft                BP Zero-Conf                  October 2023
-
-
    [RFC2131]  Droms, R., "Dynamic Host Configuration Protocol",
               RFC 2131, DOI 10.17487/RFC2131, March 1997,
               <https://www.rfc-editor.org/info/rfc2131>.
@@ -849,6 +1002,13 @@ Internet-Draft                BP Zero-Conf                  October 2023
    [RFC2462]  Thomson, S. and T. Narten, "IPv6 Stateless Address
               Autoconfiguration", RFC 2462, DOI 10.17487/RFC2462,
               December 1998, <https://www.rfc-editor.org/info/rfc2462>.
+
+
+
+Sipos                     Expires 25 April 2024                [Page 18]
+
+Internet-Draft                BP Zero-Conf                  October 2023
+
 
    [RFC3748]  Aboba, B., Blunk, L., Vollbrecht, J., Carlson, J., and H.
               Levkowetz, Ed., "Extensible Authentication Protocol
@@ -860,9 +1020,26 @@ Internet-Draft                BP Zero-Conf                  October 2023
               DOI 10.17487/RFC3927, May 2005,
               <https://www.rfc-editor.org/info/rfc3927>.
 
+   [RFC3971]  Arkko, J., Ed., Kempf, J., Zill, B., and P. Nikander,
+              "SEcure Neighbor Discovery (SEND)", RFC 3971,
+              DOI 10.17487/RFC3971, March 2005,
+              <https://www.rfc-editor.org/info/rfc3971>.
+
    [RFC4291]  Hinden, R. and S. Deering, "IP Version 6 Addressing
               Architecture", RFC 4291, DOI 10.17487/RFC4291, February
               2006, <https://www.rfc-editor.org/info/rfc4291>.
+
+   [RFC4861]  Narten, T., Nordmark, E., Simpson, W., and H. Soliman,
+              "Neighbor Discovery for IP version 6 (IPv6)", RFC 4861,
+              DOI 10.17487/RFC4861, September 2007,
+              <https://www.rfc-editor.org/info/rfc4861>.
+
+   [RFC7122]  Kruse, H., Jero, S., and S. Ostermann, "Datagram
+              Convergence Layers for the Delay- and Disruption-Tolerant
+              Networking (DTN) Bundle Protocol and Licklider
+              Transmission Protocol (LTP)", RFC 7122,
+              DOI 10.17487/RFC7122, March 2014,
+              <https://www.rfc-editor.org/info/rfc7122>.
 
    [RFC8368]  Eckert, T., Ed. and M. Behringer, "Using an Autonomic
               Control Plane for Stable Connectivity of Network
@@ -880,23 +1057,24 @@ Internet-Draft                BP Zero-Conf                  October 2023
               RFC 8415, DOI 10.17487/RFC8415, November 2018,
               <https://www.rfc-editor.org/info/rfc8415>.
 
+
+
+
+
+Sipos                     Expires 25 April 2024                [Page 19]
+
+Internet-Draft                BP Zero-Conf                  October 2023
+
+
    [RFC9172]  Birrane, III, E. and K. McKeever, "Bundle Protocol
               Security (BPSec)", RFC 9172, DOI 10.17487/RFC9172, January
               2022, <https://www.rfc-editor.org/info/rfc9172>.
 
 Acknowledgments
 
+   Thanks to Marc Blanchet for early feedback on this document.
 
 Author's Address
-
-
-
-
-
-Sipos                     Expires 7 April 2024                 [Page 16]
-
-Internet-Draft                BP Zero-Conf                  October 2023
-
 
    Brian Sipos
    The Johns Hopkins University Applied Physics Laboratory
@@ -939,14 +1117,4 @@ Internet-Draft                BP Zero-Conf                  October 2023
 
 
 
-
-
-
-
-
-
-
-
-
-
-Sipos                     Expires 7 April 2024                 [Page 17]
+Sipos                     Expires 25 April 2024                [Page 20]
